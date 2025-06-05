@@ -22,7 +22,7 @@
 ### Prerequisites
 
 - Python 3.8+
-- Hugging Face (for initial language model backend)
+- OpenAPI (for initial language model backend)
 
 ### Installation
 
