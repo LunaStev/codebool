@@ -1,26 +1,23 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import torch
+import os
+import openai
+from dotenv import load_dotenv
 
-MODEL_NAME = "tiiuae/falcon-rw-1b"
-
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def generate_code(prompt: str, lang: str = "python") -> str:
-    full_prompt = f"Write a {lang} function:\n{prompt}\n"
+    system_prompt = f"You are a coding assistant. Generate clean and working {lang} code for the given task."
 
-    inputs = tokenizer(full_prompt, return_tensors="pt")
-    outputs = model.generate(
-        inputs["input_ids"],
-        max_new_tokens=300,
-        do_sample=True,
-        temperature=0.7,
-        top_p=0.95,
-        pad_token_id=tokenizer.eos_token_id,
-    )
-    generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
-
-    if full_prompt in generated_text:
-        generated_text = generated_text.split(full_prompt)[-1].strip()
-
-    return generated_text
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",  # 필요시 gpt-4로 변경 가능
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.5,
+            max_tokens=1000,
+        )
+        return response["choices"][0]["message"]["content"].strip()
+    except Exception as e:
+        return f"❌ Error during code generation: {str(e)}"
