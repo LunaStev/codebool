@@ -20,6 +20,13 @@ def generate_code(prompt: str, lang: str = "python") -> str:
             temperature=0.5,
             max_tokens=1000,
         )
+
+        content = response["choices"][0]["message"]["content"].strip()
+
+        if content.startswith("```"):
+            lines = content.splitlines()
+            content = "\n".join(line for line in lines[1:] if not line.strip().startswith("```"))
+
         return response["choices"][0]["message"]["content"].strip()
     except Exception as e:
         return f"❌ Error during code generation: {str(e)}"
